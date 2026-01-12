@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#282433">
+  <title>My Commute</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMyODI0MzMiLz4KICA8dGV4dCB4PSIyNTYiIHk9IjI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIyMjAiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjYjFmMmE3Ij7igLpfPC90ZXh0Pgo8L3N2Zz4K">
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+CiAgPHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMyODI0MzMiLz4KICA8dGV4dCB4PSIyNTYiIHk9IjI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIyMjAiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjYjFmMmE3Ij7igLpfPC90ZXh0Pgo8L3N2Zz4K">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: #282433;
+      color: #eee9fc;
+      margin: 0;
+      padding: 16px;
+      min-height: 100vh;
+      text-transform: lowercase;
+    }
+    .container { max-width: 500px; margin: 0 auto; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #3f3951;
+    }
+    h1 { 
+      color: #b3f4f3;
+      font-size: 14px;
+      margin: 0;
+      cursor: pointer;
+    }
+    h1 span { color: #938aad; }
+    .editing h1 { margin-bottom: 6px; }
+    .route-editor {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      margin: 0;
+      transition: max-height 0.2s ease, opacity 0.2s ease, margin 0.2s ease;
+    }
+    .editing .route-editor {
+      max-height: 40px;
+      opacity: 1;
+      margin: 0 0 16px 0;
+    }
+    .route-input {
+      width: 60px;
+      background: #1a1621;
+      border: 1px solid #3f3951;
+      color: #eee9fc;
+      font-family: inherit;
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .route-input::placeholder { color: #938aad; }
+    .route-input.error { border-color: #e965a5; color: #e965a5; }
+    .route-sep { color: #938aad; font-size: 12px; }
+    .route-note { color: #938aad; font-size: 10px; margin-left: 6px; }
+    .section {
+      margin-bottom: 24px;
+      background: #1e1a29;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid #3f3951;
+    }
+    .route {
+      color: #e192ef;
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .route .arrow { color: #938aad; }
+    .refresh {
+      background: none;
+      border: 1px solid #3f3951;
+      color: #b3f4f3;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .refresh:active { background: #3f3951; }
+    .train {
+      display: flex;
+      padding: 8px 0;
+      border-bottom: 1px solid #3f3951;
+      font-size: 14px;
+      align-items: center;
+      gap: 8px;
+    }
+    .train:last-child { border-bottom: none; }
+    .time { color: #b1f2a7; width: 48px; font-weight: bold; flex-shrink: 0; }
+    .plat { color: #b1f2a7; width: 36px; flex-shrink: 0; text-align: right; }
+    .plat-guess { cursor: help; }
+    .plat-guess .num { display: inline; }
+    .plat-guess .pct { display: none; color: #eee9fc; }
+    .plat-guess:hover .num { display: none; }
+    .plat-guess:hover .pct { display: inline; }
+    .fast { 
+      color: #b3f4f3;
+      font-size: 10px;
+      font-weight: bold;
+      background: transparent;
+      border: 1px solid #b3f4f3;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    .stops { color: #b3f4f3; font-size: 11px; min-width: 70px; text-align: right; }
+    .arr { color: #938aad; font-size: 11px; min-width: 50px; text-align: right; }
+    .dest { color: #eee9fc; flex: 1; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .status { color: #eee9fc; text-align: right; width: 65px; flex-shrink: 0; }
+    .delayed .time { color: #e965a5; text-decoration: line-through; }
+    .delayed .status { color: #e965a5; }
+    .cancelled { opacity: 0.5; }
+    .cancelled .time, .cancelled .plat, .cancelled .dest, .cancelled .stops, .cancelled .arr, .cancelled .status { 
+      color: #938aad;
+    }
+    .cancelled .fast { border-color: #938aad; color: #938aad; }
+    .cancelled-tag { 
+      color: #e965a5; 
+      text-decoration: none; 
+      font-size: 11px;
+      cursor: help;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      font-size: 11px;
+      color: #938aad;
+    }
+    .footer a { color: #938aad; text-decoration: none; }
+    .footer a:hover { color: #b3f4f3; }
+    .updated { }
+    .alerts {
+      background: #e965a520;
+      border: 1px solid #e965a540;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: #e965a5;
+    }
+    .alerts a { color: #b3f4f3; }
+    .alerts summary {
+      cursor: pointer;
+      list-style: none;
+      outline: none;
+    }
+    .alerts summary::-webkit-details-marker { display: none; }
+    .alerts-body { margin-top: 8px; line-height: 1.4; }
+    .loading { color: #938aad; font-style: italic; }
+    .cursor { animation: blink 1s infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 id="route-header"><span>~/</span><span id="path-label">commute</span><span class="cursor">_</span></h1>
+      <button type="button" class="refresh" onclick="fetchTrains()">refresh</button>
+    </div>
+    <form class="route-editor" id="route-editor" autocomplete="off">
+      <input class="route-input" id="route-from" placeholder="FROM" maxlength="3" aria-label="From station">
+      <span class="route-sep">/</span>
+      <input class="route-input" id="route-to" placeholder="TO" maxlength="3" aria-label="To station">
+      <span class="route-note">enter to apply</span>
+    </form>
+    <div class="section">
+      <div class="route">
+        <span id="outbound-label">WAL <span class="arrow">→</span> WAT</span>
+      </div>
+      <div id="outbound"><span class="loading">loading...</span></div>
+    </div>
+    <div class="section">
+      <div class="route">
+        <span id="inbound-label">WAT <span class="arrow">→</span> WAL</span>
+      </div>
+      <div id="inbound"><span class="loading">loading...</span></div>
+    </div>
+    <div id="alerts"></div>
+    <div class="footer">
+      <span class="updated" id="updated"></span>
+      <a href="https://github.com/deanyo/commute" target="_blank">src</a>
+    </div>
+  </div>
+  <script>
+    const API_BASE = 'https://dnyo-proxy.deanryanit.workers.dev';
+
+    // Platform predictions for WAT departures - merged from Network Rail schedule + observed data
+    // p=platform, c=confidence% (capped at observed accuracy where available)
+    const WAT_PLATFORMS = {
+      "00:09": { p: 5, c: 60 }, "05:08": { p: 19, c: 33 }, "05:20": { p: 4, c: 50 },
+      "05:50": { p: 5, c: 33 }, "06:20": { p: 16, c: 50 }, "06:42": { p: 13, c: 85 },
+      "06:50": { p: 3, c: 57 }, "07:12": { p: 13, c: 85 }, "07:17": { p: 4, c: 83 },
+      "07:42": { p: 12, c: 85 }, "07:50": { p: 6, c: 57 }, "08:13": { p: 12, c: 95 },
+      "08:20": { p: 4, c: 71 }, "08:42": { p: 11, c: 85 }, "08:50": { p: 3, c: 71 },
+      "09:12": { p: 11, c: 57 }, "09:20": { p: 3, c: 57 }, "09:42": { p: 7, c: 57 },
+      "09:50": { p: 1, c: 42 }, "10:12": { p: 15, c: 71 }, "10:20": { p: 3, c: 42 },
+      "10:42": { p: 11, c: 95 }, "10:50": { p: 3, c: 71 }, "11:12": { p: 10, c: 95 },
+      "11:20": { p: 3, c: 57 }, "11:42": { p: 12, c: 85 }, "11:50": { p: 2, c: 28 },
+      "12:12": { p: 8, c: 57 }, "12:20": { p: 3, c: 42 }, "12:42": { p: 8, c: 71 },
+      "12:50": { p: 3, c: 50 }, "13:12": { p: 7, c: 85 }, "13:20": { p: 2, c: 25 },
+      "13:42": { p: 9, c: 95 }, "13:50": { p: 3, c: 50 }, "14:12": { p: 12, c: 71 },
+      "14:20": { p: 3, c: 42 }, "14:42": { p: 8, c: 75 }, "14:50": { p: 3, c: 71 },
+      "15:12": { p: 8, c: 75 }, "15:20": { p: 3, c: 62 }, "15:42": { p: 9, c: 87 },
+      "15:50": { p: 3, c: 62 }, "16:12": { p: 8, c: 90 }, "16:20": { p: 3, c: 72 },
+      "16:42": { p: 9, c: 76 }, "16:50": { p: 3, c: 57 }, "17:02": { p: 7, c: 92 },
+      "17:20": { p: 2, c: 78 }, "17:32": { p: 8, c: 84 }, "17:50": { p: 3, c: 64 },
+      "18:02": { p: 9, c: 66 }, "18:20": { p: 3, c: 50 }, "18:50": { p: 3, c: 46 },
+      "19:12": { p: 7, c: 76 }, "19:20": { p: 3, c: 46 }, "19:42": { p: 14, c: 38 },
+      "19:50": { p: 3, c: 50 }, "20:20": { p: 2, c: 58 }, "20:42": { p: 12, c: 75 },
+      "20:50": { p: 3, c: 54 }, "21:20": { p: 3, c: 42 }, "21:42": { p: 15, c: 42 },
+      "21:50": { p: 3, c: 57 }, "22:20": { p: 3, c: 71 }, "22:42": { p: 12, c: 66 },
+      "22:50": { p: 2, c: 42 }, "23:12": { p: 15, c: 42 }, "23:20": { p: 6, c: 66 },
+      "23:42": { p: 12, c: 95 }, "23:48": { p: 12, c: 40 }, "23:50": { p: 1, c: 95 }
+    };
+    const DEFAULT_FROM = 'WAL';
+    const DEFAULT_TO = 'WAT';
+
+    function isValidCode(code) {
+      return /^[A-Z]{3}$/.test(code);
+    }
+
+    function buildRoute(from, to) {
+      return { from, to, path: `commute/${from.toLowerCase()}/${to.toLowerCase()}` };
+    }
+
+    function getRouteFromPath() {
+      const parts = window.location.pathname.replace(/\/+$/, '').split('/').filter(Boolean);
+      let from = DEFAULT_FROM;
+      let to = DEFAULT_TO;
+      if (parts.length >= 2) {
+        const candidateFrom = parts[0].toUpperCase();
+        const candidateTo = parts[1].toUpperCase();
+        if (isValidCode(candidateFrom) && isValidCode(candidateTo)) {
+          from = candidateFrom;
+          to = candidateTo;
+        }
+      }
+      return buildRoute(from, to);
+    }
+
+    const stationNames = {};
+    let route = getRouteFromPath();
+    const container = document.querySelector('.container');
+    const header = document.getElementById('route-header');
+    const editor = document.getElementById('route-editor');
+    const fromInput = document.getElementById('route-from');
+    const toInput = document.getElementById('route-to');
+
+    function getStationLabel(code) {
+      return stationNames[code] || code;
+    }
+
+    function updateRouteUI() {
+      document.getElementById('path-label').textContent = route.path;
+      document.getElementById('outbound-label').innerHTML = `${getStationLabel(route.from)} <span class="arrow">→</span> ${getStationLabel(route.to)}`;
+      document.getElementById('inbound-label').innerHTML = `${getStationLabel(route.to)} <span class="arrow">→</span> ${getStationLabel(route.from)}`;
+      document.title = `My Commute: ${route.from}-${route.to}`;
+      if (!container.classList.contains('editing')) {
+        fromInput.value = route.from;
+        toInput.value = route.to;
+      }
+    }
+
+    function setRoute(from, to, updateUrl) {
+      route = buildRoute(from, to);
+      updateRouteUI();
+      if (updateUrl) {
+        const newPath = `/${from.toLowerCase()}/${to.toLowerCase()}`;
+        if (window.location.pathname !== newPath) {
+          history.pushState({}, '', newPath);
+        }
+      }
+    }
+
+    function normalizeInput(input) {
+      input.value = input.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3);
+    }
+
+    function markInvalid(...inputs) {
+      inputs.forEach(input => input.classList.add('error'));
+      setTimeout(() => inputs.forEach(input => input.classList.remove('error')), 900);
+    }
+
+    updateRouteUI();
+
+    header.addEventListener('click', () => {
+      container.classList.toggle('editing');
+      if (container.classList.contains('editing')) {
+        fromInput.focus();
+        fromInput.select();
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!container.classList.contains('editing')) return;
+      if (header.contains(event.target) || editor.contains(event.target)) return;
+      container.classList.remove('editing');
+    });
+
+    function applyRoute() {
+      normalizeInput(fromInput);
+      normalizeInput(toInput);
+      const from = fromInput.value;
+      const to = toInput.value;
+      if (!isValidCode(from) || !isValidCode(to)) {
+        markInvalid(fromInput, toInput);
+        return;
+      }
+      setRoute(from, to, true);
+      container.classList.remove('editing');
+      fetchTrains();
+    }
+
+    editor.addEventListener('submit', (event) => {
+      event.preventDefault();
+      applyRoute();
+    });
+
+    function handleEnter(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        applyRoute();
+      }
+    }
+
+    fromInput.addEventListener('input', () => normalizeInput(fromInput));
+    toInput.addEventListener('input', () => normalizeInput(toInput));
+    fromInput.addEventListener('keydown', handleEnter);
+    toInput.addEventListener('keydown', handleEnter);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && container.classList.contains('editing')) {
+        container.classList.remove('editing');
+      }
+    });
+
+    window.addEventListener('popstate', () => {
+      route = getRouteFromPath();
+      updateRouteUI();
+      fetchTrains();
+    });
+
+    function renderTrains(trains, destCrs, from) {
+      if (!trains?.length) return '<span class="loading">no trains</span>';
+      const list = trains.slice(0, 5);
+      const stopCounts = list.map(t => {
+        const allStops = t.subsequentCallingPoints?.[0]?.callingPoint || [];
+        if (!allStops.length) return null;
+        const destIdx = allStops.findIndex(s => s.crs === destCrs);
+        return destIdx >= 0 ? destIdx + 1 : allStops.length;
+      });
+      const arrivalTimes = list.map(t => {
+        const allStops = t.subsequentCallingPoints?.[0]?.callingPoint || [];
+        const destStop = allStops.find(s => s.crs === destCrs);
+        return destStop?.st || null;
+      });
+      const definedStops = stopCounts.filter(s => s !== null);
+      const uniqueStops = [...new Set(definedStops)].sort((a, b) => a - b);
+      const fastStopMax = uniqueStops.length >= 3 ? uniqueStops[1] : (uniqueStops[0] ?? null);
+      const showFast = uniqueStops.length >= 2;
+      return list.map((t, i) => {
+        const delayed = t.etd !== 'On time' && t.etd !== t.std && t.etd !== 'Cancelled';
+        const cancelled = t.etd === 'Cancelled';
+        const cls = cancelled ? 'cancelled' : (delayed ? 'delayed' : '');
+        let platDisplay;
+        if (t.platform) {
+          platDisplay = `P${t.platform}`;
+        } else if (from === 'WAT' && WAT_PLATFORMS[t.std]) {
+          const pred = WAT_PLATFORMS[t.std];
+          const hue = Math.round(pred.c * 1.2);
+          platDisplay = `<span class="plat-guess" style="color:hsl(${hue},70%,60%)"><span class="num">~P${pred.p}</span><span class="pct">${pred.c}%</span></span>`;
+        } else {
+          platDisplay = '--';
+        }
+        const stops = stopCounts[i];
+        const isFast = showFast && stops !== null && fastStopMax !== null && stops <= fastStopMax;
+        const isDirect = stops === 1;
+        const stopsLabel = stops === null ? '' : `${stops} stops`;
+        const fastLabel = `<span class="fast">FAST</span> ${stopsLabel}`;
+        const dest = t.destination?.[0]?.locationName || '';
+        const cancelReason = t.cancelReason ? ` title="${t.cancelReason}"` : '';
+        const destDisplay = cancelled ? `${dest} <span class="cancelled-tag"${cancelReason}>Cancelled</span>` : dest;
+        const arr = arrivalTimes[i];
+        const statusText = cancelled ? 'On time' : t.etd;
+        const arrDisplay = arr ? `<span class="arr">arr ${arr}</span>` : '';
+        return `<div class="train ${cls}">
+          <span class="time">${t.std}</span>
+          <span class="plat">${platDisplay}</span>
+          <span class="dest">${destDisplay}</span>
+          <span class="stops">${isDirect ? '<span class="fast">DIRECT</span>' : (isFast ? fastLabel : stopsLabel)}</span>
+          ${arrDisplay}
+          <span class="status">${statusText}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function updateStationNames(from, to, data) {
+      if (data?.locationName) {
+        stationNames[from] = data.locationName;
+      }
+      if (data?.filterLocationName) {
+        stationNames[to] = data.filterLocationName;
+      }
+      if (stationNames[from] || stationNames[to]) {
+        updateRouteUI();
+      }
+    }
+
+    function errorMessageFor(from, to) {
+      if (stationNames[from] && stationNames[to]) {
+        return 'error: unable to load';
+      }
+      return 'error: are you sure that CRS is valid?';
+    }
+
+    function renderError(message) {
+      return `<span class="loading">${message}</span>`;
+    }
+
+    async function fetchRoute(from, to, elId) {
+      try {
+        const res = await fetch(`${API_BASE}/departures/${from}/to/${to}`);
+        const bodyText = await res.text();
+        let data = null;
+        try {
+          data = bodyText ? JSON.parse(bodyText) : null;
+        } catch (e) {
+          document.getElementById(elId).innerHTML = renderError(errorMessageFor(from, to));
+          return [];
+        }
+        if (!res.ok || !data?.trainServices) {
+          document.getElementById(elId).innerHTML = renderError(errorMessageFor(from, to));
+          return data?.nrccMessages || [];
+        }
+        document.getElementById(elId).innerHTML = renderTrains(data.trainServices, to, from);
+        updateStationNames(from, to, data);
+        return data.nrccMessages || [];
+      } catch (e) {
+        document.getElementById(elId).innerHTML = renderError(errorMessageFor(from, to));
+        return [];
+      }
+    }
+
+    async function fetchTrains() {
+      const [msgs1, msgs2] = await Promise.all([
+        fetchRoute(route.from, route.to, 'outbound'),
+        fetchRoute(route.to, route.from, 'inbound')
+      ]);
+      const label1 = getStationLabel(route.from);
+      const label2 = getStationLabel(route.to);
+      const tagged1 = msgs1.map(m => ({ station: label1, msg: m.value }));
+      const tagged2 = msgs2.map(m => ({ station: label2, msg: m.value }));
+      const all = [...tagged1, ...tagged2];
+      const seen = new Set();
+      const unique = all.filter(a => seen.has(a.msg) ? false : seen.add(a.msg));
+      document.getElementById('alerts').innerHTML = unique.length
+        ? `<details class="alerts">
+            <summary>Service alerts (${unique.length})</summary>
+            <div class="alerts-body">${unique.map(a => `<strong>${a.station}:</strong> ${a.msg}`).join('<br><br>')}</div>
+          </details>`
+        : '';
+      document.getElementById('updated').textContent = new Date().toLocaleTimeString();
+    }
+
+    fetchTrains();
+    setInterval(fetchTrains, 60000);
+  </script>
+</body>
+</html>
