@@ -208,19 +208,21 @@
         grid-template-columns: min-content min-content minmax(0, 1fr);
         grid-template-areas:
           "time plat status"
-          "dest dest meta";
+          "dest dest dest"
+          "meta meta meta";
         column-gap: 8px;
         row-gap: 2px;
       }
-      .status { justify-self: start; width: auto; }
+      .status { justify-self: end; width: auto; }
       .dest { white-space: normal; }
       .meta {
         display: flex;
         grid-area: meta;
         gap: 6px;
-        justify-content: flex-end;
+        justify-content: flex-start;
         align-items: center;
       }
+      .stops, .arr { justify-self: start; text-align: left; }
     }
     @supports (container-type: inline-size) {
       .train { container-type: inline-size; }
@@ -229,19 +231,21 @@
           grid-template-columns: min-content min-content minmax(0, 1fr);
           grid-template-areas:
             "time plat status"
-            "dest dest meta";
+            "dest dest dest"
+            "meta meta meta";
           column-gap: 8px;
           row-gap: 2px;
         }
-        .status { justify-self: start; width: auto; }
+        .status { justify-self: end; width: auto; }
         .dest { white-space: normal; }
         .meta {
           display: flex;
           grid-area: meta;
           gap: 6px;
-          justify-content: flex-end;
+          justify-content: flex-start;
           align-items: center;
         }
+        .stops, .arr { justify-self: start; text-align: left; }
       }
     }
   </style>
