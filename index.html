@@ -213,16 +213,18 @@
         column-gap: 6px;
         row-gap: 2px;
       }
-      .status { justify-self: start; width: auto; text-align: left; }
+      .status { justify-self: end; width: auto; text-align: right; }
       .dest { white-space: normal; }
       .meta {
         display: flex;
         grid-area: meta;
         gap: 6px;
-        justify-content: flex-start;
+        justify-content: space-between;
         align-items: center;
+        width: 100%;
       }
-      .stops, .arr { justify-self: start; text-align: left; }
+      .stops { justify-self: start; text-align: left; }
+      .arr { margin-left: auto; text-align: right; }
     }
     @supports (container-type: inline-size) {
       .train { container-type: inline-size; }
@@ -236,16 +238,18 @@
           column-gap: 6px;
           row-gap: 2px;
         }
-        .status { justify-self: start; width: auto; text-align: left; }
+        .status { justify-self: end; width: auto; text-align: right; }
         .dest { white-space: normal; }
         .meta {
           display: flex;
           grid-area: meta;
           gap: 6px;
-          justify-content: flex-start;
+          justify-content: space-between;
           align-items: center;
+          width: 100%;
         }
-        .stops, .arr { justify-self: start; text-align: left; }
+        .stops { justify-self: start; text-align: left; }
+        .arr { margin-left: auto; text-align: right; }
       }
     }
   </style>
