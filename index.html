@@ -128,16 +128,19 @@
     }
     .refresh:active { background: var(--line); }
     .train {
-      display: flex;
+      display: grid;
+      grid-template-columns: min-content min-content minmax(0, 1fr) min-content min-content min-content;
+      grid-template-areas: "time plat dest stops arr status";
       padding: 8px 0;
       border-bottom: 1px solid var(--line);
       font-size: 14px;
       align-items: center;
-      gap: 8px;
+      column-gap: 10px;
+      row-gap: 4px;
     }
     .train:last-child { border-bottom: none; }
-    .time { color: var(--accent-3); width: 48px; font-weight: bold; flex-shrink: 0; }
-    .plat { color: var(--accent-3); width: 36px; flex-shrink: 0; text-align: right; }
+    .time { grid-area: time; color: var(--accent-3); min-width: 48px; font-weight: bold; }
+    .plat { grid-area: plat; color: var(--accent-3); min-width: 36px; text-align: right; }
     .plat-guess { cursor: help; }
     .plat-guess .num { display: inline; }
     .plat-guess .pct { display: none; color: var(--ink); }
@@ -152,10 +155,10 @@
       padding: 1px 4px;
       border-radius: 3px;
     }
-    .stops { color: var(--accent); font-size: 11px; min-width: 70px; text-align: right; }
-    .arr { color: var(--muted); font-size: 11px; min-width: 50px; text-align: right; }
-    .dest { color: var(--ink); flex: 1; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .status { color: var(--ink); text-align: right; width: 65px; flex-shrink: 0; }
+    .stops { grid-area: stops; color: var(--accent); font-size: 11px; min-width: 70px; text-align: right; justify-self: end; }
+    .arr { grid-area: arr; color: var(--muted); font-size: 11px; min-width: 50px; text-align: right; justify-self: end; }
+    .dest { grid-area: dest; color: var(--ink); min-width: 0; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .status { grid-area: status; color: var(--ink); text-align: right; width: 65px; justify-self: end; }
     .delayed .time { color: var(--danger); text-decoration: line-through; }
     .delayed .status { color: var(--danger); }
     .cancelled { opacity: 0.5; }
@@ -199,6 +202,29 @@
     .loading { color: var(--muted); font-style: italic; }
     .cursor { animation: blink 1s infinite; }
     @keyframes blink { 50% { opacity: 0; } }
+    @media (max-width: 520px) {
+      .train {
+        grid-template-columns: min-content min-content minmax(0, 1fr);
+        grid-template-areas:
+          "time plat status"
+          "dest dest dest"
+          "stops arr arr";
+      }
+      .dest { white-space: normal; }
+    }
+    @supports (container-type: inline-size) {
+      .train { container-type: inline-size; }
+      @container (max-width: 26rem) {
+        .train {
+          grid-template-columns: min-content min-content minmax(0, 1fr);
+          grid-template-areas:
+            "time plat status"
+            "dest dest dest"
+            "stops arr arr";
+        }
+        .dest { white-space: normal; }
+      }
+    }
   </style>
 </head>
 <body>
