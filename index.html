@@ -146,6 +146,7 @@
     .plat-guess .pct { display: none; color: var(--ink); }
     .plat-guess:hover .num { display: none; }
     .plat-guess:hover .pct { display: inline; }
+    .meta { display: contents; }
     .fast { 
       color: var(--accent);
       font-size: 10px;
@@ -207,10 +208,19 @@
         grid-template-columns: min-content min-content minmax(0, 1fr);
         grid-template-areas:
           "time plat status"
-          "dest dest dest"
-          "stops arr arr";
+          "dest dest meta";
+        column-gap: 8px;
+        row-gap: 2px;
       }
+      .status { justify-self: start; width: auto; }
       .dest { white-space: normal; }
+      .meta {
+        display: flex;
+        grid-area: meta;
+        gap: 6px;
+        justify-content: flex-end;
+        align-items: center;
+      }
     }
     @supports (container-type: inline-size) {
       .train { container-type: inline-size; }
@@ -219,10 +229,19 @@
           grid-template-columns: min-content min-content minmax(0, 1fr);
           grid-template-areas:
             "time plat status"
-            "dest dest dest"
-            "stops arr arr";
+            "dest dest meta";
+          column-gap: 8px;
+          row-gap: 2px;
         }
+        .status { justify-self: start; width: auto; }
         .dest { white-space: normal; }
+        .meta {
+          display: flex;
+          grid-area: meta;
+          gap: 6px;
+          justify-content: flex-end;
+          align-items: center;
+        }
       }
     }
   </style>
@@ -459,12 +478,15 @@
         const arr = arrivalTimes[i];
         const statusText = cancelled ? 'On time' : t.etd;
         const arrDisplay = arr ? `<span class="arr">arr ${arr}</span>` : '';
+        const stopsDisplay = isDirect ? '<span class="fast">DIRECT</span>' : (isFast ? fastLabel : stopsLabel);
         return `<div class="train ${cls}">
           <span class="time">${t.std}</span>
           <span class="plat">${platDisplay}</span>
           <span class="dest">${destDisplay}</span>
-          <span class="stops">${isDirect ? '<span class="fast">DIRECT</span>' : (isFast ? fastLabel : stopsLabel)}</span>
-          ${arrDisplay}
+          <span class="meta">
+            <span class="stops">${stopsDisplay}</span>
+            ${arrDisplay}
+          </span>
           <span class="status">${statusText}</span>
         </div>`;
       }).join('');
